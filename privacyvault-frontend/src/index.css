@@ -1,0 +1,403 @@
+@import "tailwindcss";
+
+/* PrivacyVault — clean, restrained dashboard */
+
+:root {
+  color-scheme: dark;
+
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  color: #edf2f7;
+  background: #0b1120;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      rgba(56, 189, 248, 0.045),
+      transparent 45%
+    ),
+    #0b1120;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  color: #ffffff;
+  background: #0e7490;
+}
+
+/* Page layout */
+
+main.min-h-screen {
+  background: transparent !important;
+}
+
+main > section {
+  max-width: 1180px;
+  margin-inline: auto;
+}
+
+main p {
+  line-height: 1.7;
+}
+
+/* Header */
+
+main > header {
+  background: rgba(11, 17, 32, 0.94) !important;
+  border-bottom: 1px solid #223047 !important;
+  backdrop-filter: blur(14px);
+}
+
+main > header > div {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+main > header h1 {
+  letter-spacing: -0.035em;
+}
+
+/* Typography */
+
+main h1,
+main h2,
+main h3 {
+  letter-spacing: -0.025em;
+}
+
+main h2 {
+  text-wrap: balance;
+}
+
+main [class~="text-slate-300"] {
+  color: #cbd5e1 !important;
+}
+
+main [class~="text-slate-400"],
+main [class~="text-gray-400"] {
+  color: #a5b1c2 !important;
+}
+
+main [class~="text-slate-500"] {
+  color: #94a3b8 !important;
+}
+
+/* Main cards: neutral surfaces, no colored glow */
+
+main div[class~="rounded-2xl"][class~="border"],
+main section[class~="rounded-2xl"][class~="border"] {
+  border: 1px solid #263247 !important;
+  border-radius: 18px !important;
+
+  background: #111b2b !important;
+
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Keep the real-HE panel distinctive but restrained */
+
+main section[class~="border-cyan-300/30"] {
+  border-color: #315161 !important;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(34, 211, 238, 0.025),
+      transparent 60%
+    ),
+    #111b2b !important;
+}
+
+/* Nested result surfaces */
+
+main [class~="bg-black/20"],
+main [class~="bg-black/30"] {
+  background-color: #0c1524 !important;
+}
+
+main [class~="bg-cyan-400/5"] {
+  background-color: #102331 !important;
+}
+
+main [class~="bg-emerald-500/5"] {
+  background-color: #10241f !important;
+}
+
+/* Preserve functional colors */
+
+main [class~="text-cyan-300"] {
+  color: #67d9ee !important;
+}
+
+main [class~="text-cyan-200"] {
+  color: #b3e8f2 !important;
+}
+
+main [class~="text-emerald-300"] {
+  color: #6ed5aa !important;
+}
+
+main [class~="text-emerald-400"] {
+  color: #177f88 !important;
+}
+
+main [class~="bg-emerald-400/10"],
+main [class~="bg-emerald-500/10"] {
+  background-color: rgba(52, 211, 153, 0.08) !important;
+}
+
+/* Buttons */
+
+main button {
+  min-height: 44px;
+  border-radius: 10px !important;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+/* Cyan is reserved for primary actions */
+
+main button[class~="bg-cyan-300"],
+main button[class~="bg-emerald-400"],
+main button[class~="bg-green-600"] {
+  color: #06202a !important;
+  background: #0fc2eb !important;
+  border: 1px solid transparent;
+  box-shadow: none !important;
+  font-weight: 600;
+}
+
+main button[class~="bg-cyan-300"]:hover:not(:disabled),
+main button[class~="bg-emerald-400"]:hover:not(:disabled),
+main button[class~="bg-green-600"]:hover:not(:disabled) {
+  background: #8be4f3 !important;
+  box-shadow: 0 3px 12px rgba(34, 211, 238, 0.1) !important;
+}
+
+main button[class~="border-white/15"] {
+  color: #d8e2ee;
+  background: transparent;
+  border-color: #3a475b !important;
+}
+
+main button[class~="border-white/15"]:hover {
+  background: #1b293c;
+  border-color: #56677e !important;
+}
+
+main button:disabled {
+  opacity: 0.55;
+}
+
+main button:focus-visible,
+main a:focus-visible {
+  outline: 2px solid #67d9ee;
+  outline-offset: 4px;
+}
+
+/* Form fields */
+
+main input,
+main select {
+  min-height: 46px;
+  border-radius: 10px !important;
+
+  color: #edf2f7 !important;
+  background-color: #0c1524 !important;
+  border: 1px solid #334155 !important;
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+main input::placeholder {
+  color: #91a0b4;
+}
+
+main input:hover,
+main select:hover {
+  border-color: #52647d !important;
+}
+
+main input:focus,
+main select:focus {
+  outline: none;
+  border-color: #67d9ee !important;
+  box-shadow: 0 0 0 3px rgba(103, 217, 238, 0.1);
+}
+
+main select option {
+  color: #edf2f7;
+  background: #111b2b;
+}
+
+/* Ciphertext: technical detail, not the main attraction */
+
+main code {
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+
+  font-size: 0.75rem;
+  line-height: 1.75;
+}
+
+main code[class~="block"] {
+  padding: 14px;
+  border: 1px solid #263247;
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+}
+
+/* Result details */
+
+main dl {
+  gap: 20px;
+}
+
+main dt {
+  margin-bottom: 4px;
+}
+
+main dd {
+  margin-left: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Employee table */
+
+main table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+main thead th {
+  padding-top: 14px;
+  padding-bottom: 14px;
+
+  color: #a5b1c2;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+}
+
+main tbody td {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+main tbody tr:hover {
+  background-color: rgba(148, 163, 184, 0.035);
+}
+
+/* Footer */
+
+main footer {
+  color: #94a3b8 !important;
+  letter-spacing: 0.01em;
+}
+
+/* Scrollbars */
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b1120;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a475b;
+  border: 2px solid #0b1120;
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #52647d;
+}
+
+/* Small screens */
+
+@media (max-width: 640px) {
+  main > section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  main div[class~="rounded-2xl"][class~="border"],
+  main section[class~="rounded-2xl"][class~="border"] {
+    padding: 18px;
+    border-radius: 14px !important;
+  }
+
+  main h2[class~="text-4xl"] {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  main button {
+    white-space: normal;
+  }
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

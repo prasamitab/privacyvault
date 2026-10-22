@@ -1,0 +1,9 @@
+FROM privacyvault-he-test
+
+RUN python -m pip install --no-cache-dir \
+    "fastapi>=0.115,<1" \
+    "uvicorn>=0.30,<1"
+
+COPY he_service.py /work/he_service.py
+
+CMD ["python", "-m", "uvicorn", "he_service:app", "--host", "0.0.0.0", "--port", "8001"]

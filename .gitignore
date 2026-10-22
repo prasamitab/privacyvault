@@ -1,0 +1,52 @@
+
+# macOS
+.DS_Store
+
+# Local backups
+privacyvault-backup-*/
+
+# Dependencies and Python caches
+node_modules/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+
+# Generated encryption keys and datasets
+*.key
+*.ctxt
+context.bin
+key-separation-*/
+private/
+public/
+results/
+encrypted-exports/
+response.json
+privacyvault-encrypted-result.json
+privacyvault-uploaded-result.json
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Generated builds
+dist/
+build/
+*.log
+
+# Old frontend recovery copies
+/privacyvault-frontend/src/App.before-recovery.jsx
+/privacyvault-frontend/src/index.backup-*.css
+
+# Generated API response
+/privacyvault-he-test/he_api_result.json
