@@ -15,7 +15,7 @@ if not USERNAME or len(PASSWORD) < 20:
     )
 
 
-async def app(scope, receive, send):
+async def protected_app(scope, receive, send):
     if scope["type"] != "http":
         await backend(scope, receive, send)
         return
@@ -61,3 +61,15 @@ async def app(scope, receive, send):
         return
 
     await backend(scope, receive, send)
+
+
+from starlette.middleware.cors import CORSMiddleware
+from app.config import settings
+
+app = CORSMiddleware(
+    protected_app,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+)
