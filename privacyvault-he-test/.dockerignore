@@ -1,0 +1,23 @@
+
+.git
+.DS_Store
+.env
+.env.*
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Never send generated key material to the builder
+key-separation-*/
+private/
+public/
+*.key
+*.pem
+*.ctxt
+context.bin
+
+# Local outputs
+results/
+encrypted-exports/
+*result*.json

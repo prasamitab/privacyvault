@@ -14,6 +14,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from fastapi import Request as FastAPIRequest
 from starlette.concurrency import run_in_threadpool
+from app.config import settings
 
 
 from fastapi import APIRouter, HTTPException
@@ -22,7 +23,8 @@ from fastapi import APIRouter, HTTPException
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-HE_SERVICE_URL = "http://127.0.0.1:8001/aggregate"
+HE_SERVICE_BASE_URL = settings.HE_SERVICE_BASE_URL.rstrip("/")
+HE_SERVICE_URL = f"{HE_SERVICE_BASE_URL}/aggregate"
 
 
 @router.post("/aggregate-demo")
@@ -84,7 +86,7 @@ def aggregate_demo():
             status_code=502,
             detail="Invalid response from HE evaluator",
         )
-HE_UPLOAD_URL = "http://127.0.0.1:8001/aggregate-upload"
+HE_UPLOAD_URL = f"{HE_SERVICE_BASE_URL}/aggregate-upload"
 MAX_UPLOAD_BYTES = 64 * 1024 * 1024
 
 

@@ -19,7 +19,12 @@ import {
   XCircle,
 } from "lucide-react";
 
-const API_BASE = "http://127.0.0.1:8000/api/v1";
+const BACKEND_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+).replace(/\/+$/, "");
+
+const API_BASE = `${BACKEND_URL}/api/v1`;
+
 
 const glassCard =
   "rounded-2xl border border-white/10 bg-slate-950/50 p-5 shadow-2xl shadow-black/20 backdrop-blur-xl";
@@ -97,7 +102,7 @@ function App() {
 
     try {
       const [healthResponse, statsResponse, employeesResponse] = await Promise.all([
-        axios.get("http://127.0.0.1:8000/health"),
+        axios.get(`${BACKEND_URL}/health`),
         axios.get(`${API_BASE}/analytics/dashboard`),
         axios.get(`${API_BASE}/employees/`),
       ]);
@@ -112,7 +117,7 @@ function App() {
     } catch (error) {
       console.error(error);
       setBackendStatus(
-        "Backend unavailable. Ensure FastAPI is running at http://127.0.0.1:8000"
+        "Backend unavailable. Check the configured API address and service status."
       );
     } finally {
       setLoading(false);

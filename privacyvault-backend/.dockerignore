@@ -1,0 +1,16 @@
+
+.git
+.DS_Store
+.env
+.env.*
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.db
+*.sqlite
+*.sqlite3
+*.key
+*.pem
+private/
+key-separation-*/

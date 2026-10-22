@@ -1,7 +1,12 @@
 import { useState } from "react";
 import axios from "axios";
 
-const API_BASE = "http://127.0.0.1:8000/api/v1/real-he";
+const BACKEND_URL = (
+  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+).replace(/\/+$/, "");
+
+const API_BASE = `${BACKEND_URL}/api/v1/real-he`;
+
 const MAX_FILE_BYTES = 64 * 1024 * 1024;
 
 export default function RealHEDemo() {
