@@ -1,0 +1,63 @@
+name: privacyvault-demo
+
+services:
+  evaluator:
+    image: privacyvault-he-service
+    build:
+      context: ./privacyvault-he-test
+      dockerfile: Dockerfile.service
+
+    volumes:
+      - type: bind
+        source: ${HE_PUBLIC_DIR:-./privacyvault-he-test/key-separation-20261017-203220/public}
+        target: /public
+        read_only: true
+        bind:
+          create_host_path: false
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=3).read()"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  backend:
+    image: privacyvault-backend-web
+    build:
+      context: ./privacyvault-backend
+      dockerfile: Dockerfile.web
+
+    ports:
+      - "127.0.0.1:8003:8000"
+
+    environment:
+      DEBUG: "false"
+      HE_SERVICE_BASE_URL: "http://evaluator:8001"
+      DATABASE_URL: "sqlite+aiosqlite:////data/privacyvault.db"
+      CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173"]'
+
+    volumes:
+      - demo_database:/data
+
+    depends_on:
+      evaluator:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  demo_database:
