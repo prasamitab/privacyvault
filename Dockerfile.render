@@ -1,0 +1,47 @@
+FROM python:3.11-slim-bookworm
+
+ENV PYTHONUNBUFFERED=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    DEBUG=false \
+    HE_SERVICE_BASE_URL=http://127.0.0.1:8001 \
+    DATABASE_URL=sqlite+aiosqlite:////data/privacyvault.db \
+    OMP_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash build-essential cmake git libgomp1 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m venv /opt/he \
+    && /opt/he/bin/python -m pip install --no-cache-dir \
+        "Pyfhel==3.5.0" \
+        "fastapi>=0.115,<1" \
+        "uvicorn>=0.30,<1" \
+    && /opt/he/bin/python -m pip check
+
+COPY privacyvault-backend/requirements.web.txt /tmp/requirements.web.txt
+
+RUN python -m venv /opt/backend \
+    && /opt/backend/bin/python -m pip install --no-cache-dir \
+        -r /tmp/requirements.web.txt \
+    && /opt/backend/bin/python -m pip check
+
+RUN useradd --create-home --uid 10001 appuser \
+    && mkdir -p /work/backend /work/evaluator /data /public \
+    && chown -R appuser:appuser /work /data /public
+
+COPY privacyvault-backend/app /work/backend/app
+COPY privacyvault-he-test/he_service.py /work/evaluator/he_service.py
+COPY render-start.sh /usr/local/bin/render-start.sh
+
+RUN chmod 755 /usr/local/bin/render-start.sh
+
+COPY render_app.py /work/backend/render_app.py
+
+USER appuser
+WORKDIR /work/backend
+
+EXPOSE 10000
+
+CMD ["/usr/local/bin/render-start.sh"]
