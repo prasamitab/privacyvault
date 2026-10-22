@@ -1,6 +1,7 @@
 import RealHEDemo from "./RealHEDemo";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import api from "./api";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -102,9 +103,9 @@ function App() {
 
     try {
       const [healthResponse, statsResponse, employeesResponse] = await Promise.all([
-        axios.get(`${BACKEND_URL}/health`),
-        axios.get(`${API_BASE}/analytics/dashboard`),
-        axios.get(`${API_BASE}/employees/`),
+        api.get(`${BACKEND_URL}/health`),
+        api.get(`${API_BASE}/analytics/dashboard`),
+        api.get(`${API_BASE}/employees/`),
       ]);
 
       setBackendStatus(
@@ -133,7 +134,7 @@ function App() {
     setFormMessage("");
 
     try {
-      await axios.post(`${API_BASE}/employees/`, {
+      await api.post(`${API_BASE}/employees/`, {
         ...form,
         salary: Number(form.salary),
       });
@@ -160,7 +161,7 @@ function App() {
     setResult(null);
 
     try {
-      const response = await axios.post(`${API_BASE}/computations/compute`, {
+      const response = await api.post(`${API_BASE}/computations/compute`, {
         operation,
         department: department || null,
       });

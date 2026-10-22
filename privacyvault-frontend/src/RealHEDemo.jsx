@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import api from "./api";
 
 const BACKEND_URL = (
   import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
@@ -91,21 +92,21 @@ export default function RealHEDemo() {
           );
         }
 
-        response = await axios.post(
+        response = await api.post(
           `${API_BASE}/aggregate-upload`,
           text,
           {
             headers: {
               "Content-Type": "application/json",
             },
-            timeout: 45000,
+            timeout: 120000,
           }
         );
       } else {
-        response = await axios.post(
+        response = await api.post(
           `${API_BASE}/aggregate-demo`,
           undefined,
-          { timeout: 45000 }
+          { timeout: 120000 }
         );
       }
 
