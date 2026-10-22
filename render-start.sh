@@ -16,12 +16,13 @@ trap 'exit 143' TERM
 trap 'exit 130' INT
 
 # Decode Render runtime public files
-for filename in context.bin public.key; do
-    encoded="/etc/secrets/${filename}.b64"
-    if [ -r "$encoded" ]; then
-        base64 --decode "$encoded" > "/public/$filename"
-    fi
-done
+if [ -r /etc/secrets/context.bin.b64 ]; then
+    base64 --decode /etc/secrets/context.bin.b64 > /public/context.bin
+fi
+
+if [ -r /etc/secrets/public-key-part-aa ]; then
+    cat         /etc/secrets/public-key-part-aa         /etc/secrets/public-key-part-ab         /etc/secrets/public-key-part-ac         | base64 --decode > /public/public.key
+fi
 
 test -r /public/context.bin || {
     echo "Missing or unreadable /public/context.bin"
