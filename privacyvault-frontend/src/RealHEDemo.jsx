@@ -1,34 +1,92 @@
 import { useState } from "react";
 import axios from "axios";
-import api from "./api";
-
-const BACKEND_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
-).replace(/\/+$/, "");
-
-const API_BASE = `${BACKEND_URL}/api/v1/real-he`;
+import api, { BACKEND_URL } from "./api";
 
 const MAX_FILE_BYTES = 64 * 1024 * 1024;
+const HASH_PATTERN = /^[a-f0-9]{64}$/i;
+
+function prepareUpload(dataset) {
+  if (
+    !dataset ||
+    typeof dataset !== "object" ||
+    Array.isArray(dataset) ||
+    dataset.format_version !== 1 ||
+    dataset.scheme !== "CKKS" ||
+    dataset.operation !== "sum" ||
+    !Number.isInteger(dataset.employee_count) ||
+    dataset.employee_count < 1 ||
+    dataset.employee_count > 100 ||
+    !Array.isArray(dataset.ciphertexts_base64) ||
+    dataset.ciphertexts_base64.length !== dataset.employee_count ||
+    !dataset.ciphertexts_base64.every(
+      (value) => typeof value === "string" && value.length > 0
+    ) ||
+    typeof dataset.context_sha256 !== "string" ||
+    !HASH_PATTERN.test(dataset.context_sha256) ||
+    typeof dataset.public_key_sha256 !== "string" ||
+    !HASH_PATTERN.test(dataset.public_key_sha256)
+  ) {
+    throw new Error(
+      "Select encrypted-dataset.json created by encrypt_csv.py " +
+      "or encrypt_dataset.py—not a result, reference, or key file."
+    );
+  }
+
+  return {
+    format_version: 1,
+    scheme: "CKKS",
+    operation: "sum",
+    employee_count: dataset.employee_count,
+    context_sha256: dataset.context_sha256,
+    public_key_sha256: dataset.public_key_sha256,
+    ciphertexts_base64: dataset.ciphertexts_base64,
+  };
+}
+
+function validateResult(data, upload) {
+  if (
+    !data ||
+    data.mode !== "real-he-uploaded-dataset-demo" ||
+    data.scheme !== "CKKS" ||
+    data.operation !== "sum" ||
+    data.employee_count !== upload.employee_count ||
+    data.context_sha256 !== upload.context_sha256 ||
+    data.public_key_sha256 !== upload.public_key_sha256 ||
+    data.secret_key_loaded !== false ||
+    data.decryption_performed !== false ||
+    typeof data.encrypted_result_base64 !== "string" ||
+    !data.encrypted_result_base64 ||
+    !Number.isInteger(data.ciphertext_size_bytes) ||
+    data.ciphertext_size_bytes <= 0 ||
+    !Number.isFinite(data.computation_time_ms) ||
+    data.computation_time_ms < 0
+  ) {
+    throw new Error(
+      "The API returned unexpected result metadata. " +
+      "Do not treat this response as verified."
+    );
+  }
+}
 
 export default function RealHEDemo() {
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-
-  const busy = loading !== "";
+  const [result, setResult] = useState(null);
+  const [metrics, setMetrics] = useState(null);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   function handleFileChange(event) {
     const file = event.target.files?.[0] ?? null;
 
     setSelectedFile(null);
-    setError("");
     setResult(null);
+    setMetrics(null);
+    setError("");
 
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith(".json")) {
-      setError("Select the encrypted-dataset.json file.");
+      setError("Choose an encrypted dataset JSON file.");
       event.target.value = "";
       return;
     }
@@ -42,75 +100,51 @@ export default function RealHEDemo() {
     setSelectedFile(file);
   }
 
-  async function runAggregation(mode) {
-    if (busy) return;
+  async function runAggregation() {
+    if (busy || !selectedFile) return;
 
-    if (mode === "upload" && !selectedFile) {
-      setError("Select an encrypted dataset first.");
-      return;
-    }
-
-    setLoading(mode);
+    setBusy(true);
     setError("");
     setResult(null);
+    setMetrics(null);
 
     try {
-      let response;
+      let parsed;
 
-      if (mode === "upload") {
-        const text = await selectedFile.text();
-
-        let dataset;
-
-        try {
-          dataset = JSON.parse(text);
-        } catch {
-          throw new Error("The selected file is not valid JSON.");
-        }
-
-        if (
-          !dataset ||
-          typeof dataset !== "object" ||
-          Array.isArray(dataset) ||
-          dataset.format_version !== 1 ||
-          dataset.scheme !== "CKKS" ||
-          dataset.operation !== "sum" ||
-          !Number.isInteger(dataset.employee_count) ||
-          dataset.employee_count < 1 ||
-          dataset.employee_count > 100 ||
-          !Array.isArray(dataset.ciphertexts_base64) ||
-          dataset.ciphertexts_base64.length !== dataset.employee_count ||
-          !dataset.ciphertexts_base64.every(
-            (value) => typeof value === "string" && value.length > 0
-          ) ||
-          typeof dataset.context_sha256 !== "string" ||
-          typeof dataset.public_key_sha256 !== "string"
-        ) {
-          throw new Error(
-            "Choose the encrypted dataset created by encrypt_dataset.py, " +
-              "not a result file or key file."
-          );
-        }
-
-        response = await api.post(
-          `${API_BASE}/aggregate-upload`,
-          text,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-            timeout: 120000,
-          }
-        );
-      } else {
-        response = await api.post(
-          `${API_BASE}/aggregate-demo`,
-          undefined,
-          { timeout: 120000 }
-        );
+      try {
+        parsed = JSON.parse(await selectedFile.text());
+      } catch {
+        throw new Error("The selected file could not be read as JSON.");
       }
 
+      const upload = prepareUpload(parsed);
+      const body = JSON.stringify(upload);
+      const requestBytes = new Blob([body]).size;
+
+      if (requestBytes > MAX_FILE_BYTES) {
+        throw new Error("The prepared upload exceeds 64 MiB.");
+      }
+
+      const started = performance.now();
+
+      const response = await api.post(
+        "/api/v1/real-he/aggregate-upload",
+        body,
+        {
+          headers: { "Content-Type": "application/json" },
+          timeout: 120000,
+        }
+      );
+
+      const requestElapsedMs = performance.now() - started;
+
+      validateResult(response.data, upload);
+
       setResult(response.data);
+      setMetrics({
+        requestBytes,
+        requestElapsedMs,
+      });
     } catch (requestError) {
       const detail = requestError.response?.data?.detail;
 
@@ -118,22 +152,24 @@ export default function RealHEDemo() {
         setError(detail);
       } else if (requestError.code === "ECONNABORTED") {
         setError(
-          "The request timed out. Check the backend and Docker HE service."
+          "The request timed out. Check the configured backend " +
+          "and evaluator service, then retry."
         );
-      } else if (!axios.isAxiosError(requestError)) {
-        setError(requestError.message || "Could not read the dataset.");
-      } else {
+      } else if (axios.isAxiosError(requestError)) {
         setError(
-          "Request failed. Check the backend and Docker HE service."
+          "The API request failed. Check your login, configured " +
+          "API address, and backend status."
         );
+      } else {
+        setError(requestError.message || "Could not process the dataset.");
       }
     } finally {
-      setLoading("");
+      setBusy(false);
     }
   }
 
   function downloadEncryptedResult() {
-    if (!result?.encrypted_result_base64) return;
+    if (!result) return;
 
     const exportData = {
       mode: result.mode,
@@ -147,6 +183,13 @@ export default function RealHEDemo() {
       public_key_sha256: result.public_key_sha256,
       secret_key_loaded: result.secret_key_loaded,
       decryption_performed: result.decryption_performed,
+      client_observation: {
+        api_base_url: BACKEND_URL,
+        downloaded_at: new Date().toISOString(),
+        request_elapsed_ms: metrics?.requestElapsedMs,
+        request_bytes: metrics?.requestBytes,
+        note: "Client-recorded metadata, not independently attested.",
+      },
     };
 
     const blob = new Blob(
@@ -158,10 +201,7 @@ export default function RealHEDemo() {
     const link = document.createElement("a");
 
     link.href = url;
-    link.download =
-      result.mode === "real-he-uploaded-dataset-demo"
-        ? "privacyvault-uploaded-result.json"
-        : "privacyvault-encrypted-result.json";
+    link.download = "privacyvault-uploaded-result.json";
 
     document.body.appendChild(link);
     link.click();
@@ -170,46 +210,40 @@ export default function RealHEDemo() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  const uploadedResult =
-    result?.mode === "real-he-uploaded-dataset-demo";
-
   return (
     <section
       aria-busy={busy}
-      className="mb-8 rounded-2xl border border-cyan-300/30 bg-slate-950/60 p-6"
+      className="rounded-2xl border border-cyan-300/30 bg-slate-950/60 p-6"
     >
-      <p className="text-xs font-semibold uppercase tracking-widest text-cyan-300">
-        Real homomorphic encryption • CKKS
+      <p className="text-xs uppercase tracking-widest text-cyan-300">
+        CKKS encrypted-sum experiment
       </p>
 
-      <h2 className="mt-2 text-2xl font-bold text-white">
-        Encrypted aggregation lab
-      </h2>
+      <h3 className="mt-2 text-xl font-semibold text-white">
+        Upload ciphertexts, receive ciphertext
+      </h3>
 
       <p className="mt-3 text-sm leading-6 text-slate-300">
-        Upload a dataset encrypted by your local Python tool, or run
-        the fixed two-record demo. The evaluator adds ciphertexts;
-        decryption stays in the separate key-holder workflow.
+        The evaluator adds the uploaded ciphertexts. Decryption and
+        comparison with the plaintext reference happen separately
+        on the key holder's machine.
       </p>
 
-      <p className="mt-2 text-xs text-slate-400">
-        Local educational demo • Separate from the mock employee form
-      </p>
-
-      <div className="mt-6 rounded-xl border border-white/10 p-4">
+      <div className="mt-5 rounded-xl border border-white/10 p-4">
         <label
           htmlFor="he-dataset-file"
-          className="block text-sm font-semibold text-white"
+          className="block text-sm font-semibold"
         >
-          Encrypted dataset
+          Encrypted dataset JSON
         </label>
 
         <p
           id="he-dataset-help"
-          className="mt-1 text-xs leading-5 text-slate-400"
+          className="mt-2 text-xs leading-5 text-slate-400"
         >
-          Choose encrypted-dataset.json. Up to 100 records and 64 MiB.
-          Do not select key files or plaintext salary files.
+          Supports 1–100 records and a maximum file size of 64 MiB.
+          Select encrypted-dataset.json only. Never select your
+          CSV, local reference, verification report, or secret key.
         </p>
 
         <input
@@ -219,48 +253,31 @@ export default function RealHEDemo() {
           onChange={handleFileChange}
           disabled={busy}
           aria-describedby="he-dataset-help"
-          className="mt-3 block w-full rounded-lg border border-white/15 p-2 text-sm text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-sm file:text-white disabled:opacity-50"
+          className="mt-4 block w-full rounded-lg border border-white/15 p-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-white disabled:opacity-50"
         />
 
         {selectedFile && (
-          <p className="mt-2 break-all text-xs text-slate-400">
+          <p className="mt-3 break-all text-xs text-slate-400">
             Selected: {selectedFile.name} ·{" "}
-            {(selectedFile.size / 1024).toFixed(1)} KiB
+            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MiB
           </p>
         )}
 
         <button
           type="button"
-          onClick={() => runAggregation("upload")}
+          onClick={runAggregation}
           disabled={busy || !selectedFile}
           className="mt-4 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading === "upload"
-            ? "Aggregating encrypted records..."
+          {busy
+            ? "Computing encrypted sum..."
             : "Aggregate uploaded dataset"}
         </button>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={() => runAggregation("demo")}
-          disabled={busy}
-          className="rounded-xl border border-white/15 px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {loading === "demo"
-            ? "Running fixed demo..."
-            : "Run fixed two-record demo"}
-        </button>
-
-        <span className="text-xs text-slate-400">
-          No upload needed for the fixed demo.
-        </span>
-      </div>
-
       {busy && (
         <p role="status" className="mt-4 text-sm text-cyan-200">
-          Waiting for the encrypted aggregate…
+          Waiting for the API response. No decryption is performed here.
         </p>
       )}
 
@@ -271,74 +288,96 @@ export default function RealHEDemo() {
       )}
 
       {result && (
-        <div
-          role="status"
-          className="mt-5 rounded-xl border border-white/10 bg-black/20 p-4"
-        >
-          <p className="font-semibold text-emerald-300">
+        <div className="mt-6 rounded-xl border border-white/10 p-5">
+          <p role="status" className="font-semibold text-cyan-200">
             Encrypted aggregate received
           </p>
 
-          <p className="mt-1 text-xs text-slate-400">
-            {uploadedResult
-              ? "Source: uploaded encrypted dataset"
-              : "Source: fixed fictional dataset"}
+          <p className="mt-2 text-sm text-amber-200">
+            Local numerical verification is still required.
           </p>
 
-          <dl className="mt-5 grid grid-cols-2 gap-5 text-sm lg:grid-cols-4">
+          <dl className="mt-5 grid gap-5 sm:grid-cols-2">
             <div>
-              <dt className="text-slate-400">Scheme</dt>
-              <dd className="mt-1 text-white">{result.scheme}</dd>
+              <dt className="text-xs text-slate-400">Record count</dt>
+              <dd className="mt-1">{result.employee_count}</dd>
             </div>
 
             <div>
-              <dt className="text-slate-400">
-                {uploadedResult
-                  ? "Uploaded records"
-                  : "Fixed-dataset records"}
+              <dt className="text-xs text-slate-400">
+                Server-reported processing time
               </dt>
-              <dd className="mt-1 text-white">
-                {result.employee_count}
+              <dd className="mt-1">
+                {result.computation_time_ms.toFixed(2)} ms
               </dd>
             </div>
 
             <div>
-              <dt className="text-slate-400">Ciphertext size</dt>
-              <dd className="mt-1 text-white">
-                {Number(result.ciphertext_size_bytes).toLocaleString()}{" "}
-                bytes
+              <dt className="text-xs text-slate-400">
+                Browser-observed request duration
+              </dt>
+              <dd className="mt-1">
+                {metrics.requestElapsedMs.toFixed(2)} ms
               </dd>
             </div>
 
             <div>
-              <dt className="text-slate-400">Evaluator processing time</dt>
-              <dd className="mt-1 text-white">
-                {Number(result.computation_time_ms).toFixed(2)} ms
+              <dt className="text-xs text-slate-400">
+                Request body size
+              </dt>
+              <dd className="mt-1">
+                {metrics.requestBytes.toLocaleString()} bytes
               </dd>
+            </div>
+
+            <div>
+              <dt className="text-xs text-slate-400">
+                Result ciphertext size
+              </dt>
+              <dd className="mt-1">
+                {result.ciphertext_size_bytes.toLocaleString()} bytes
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-xs text-slate-400">Operation</dt>
+              <dd className="mt-1">Encrypted sum · CKKS</dd>
             </div>
           </dl>
 
-          <p className="mt-4 text-sm text-cyan-200">
-            No plaintext total is returned. Download this result and
-            verify it separately using the matching key-holder files.
+          <p className="mt-5 text-xs leading-5 text-slate-400">
+            Request duration includes the API round trip, not local
+            encryption or decryption. Response checks validate expected
+            metadata; they do not prove correct server execution.
           </p>
 
-          <code className="mt-4 block break-all rounded-lg bg-black/30 p-3 text-xs text-emerald-200">
-            {result.encrypted_result_preview}
-          </code>
+          <details className="mt-5 text-xs">
+            <summary className="cursor-pointer text-slate-300">
+              Public-file identifiers and ciphertext preview
+            </summary>
+
+            <div className="mt-3 space-y-3 break-all font-mono text-slate-400">
+              <p>Context SHA-256: {result.context_sha256}</p>
+              <p>Public key SHA-256: {result.public_key_sha256}</p>
+              <p>
+                Ciphertext preview:{" "}
+                {result.encrypted_result_base64.slice(0, 80)}…
+              </p>
+            </div>
+          </details>
 
           <button
             type="button"
             onClick={downloadEncryptedResult}
-            disabled={!result.encrypted_result_base64}
-            className="mt-4 rounded-xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10 disabled:opacity-50"
+            className="mt-5 rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold hover:bg-white/5"
           >
             Download encrypted result
           </button>
 
-          <p className="mt-3 text-xs text-slate-400">
-            Exports aggregate ciphertext and metadata only. The
-            download does not include a private key or plaintext total.
+          <p className="mt-3 text-xs leading-5 text-slate-400">
+            The download contains aggregate ciphertext, API metadata,
+            and client-recorded request information—not the plaintext
+            total or secret key. Run the separate local verifier next.
           </p>
         </div>
       )}
