@@ -1,0 +1,667 @@
+.pv-app {
+    --ink: #203b31;
+    --muted: #626b62;
+    --green: #214f3c;
+    --line: #dcded4;
+    --paper: #f7f6ef;
+  
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+    color-scheme: light;
+  }
+  
+  .pv-app ::selection {
+    background: #d5e7d3;
+    color: #18382a;
+  }
+  
+  .pv-shell {
+    width: min(960px, calc(100% - 48px));
+    margin-inline: auto;
+  }
+  
+  .pv-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 88px;
+    border-bottom: 1px solid var(--line);
+  }
+  
+  .pv-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.6px;
+  }
+  
+  .pv-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  
+  .pv-status > span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #a4752c;
+  }
+  
+  .pv-status--connected > span {
+    background: #35714b;
+  }
+  
+  .pv-intro {
+    padding: 52px 0 32px;
+    text-align: center;
+  }
+  
+  .pv-eyebrow {
+    margin: 0 0 16px;
+    color: var(--green);
+    font-size: 10px;
+    font-weight: 650;
+    letter-spacing: 2px;
+  }
+  
+  .pv-intro h1 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(38px, 5vw, 58px);
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -2.4px;
+  }
+  
+  .pv-intro h1 em {
+    color: #527058;
+    font-weight: 400;
+  }
+  
+  .pv-intro > p:last-child {
+    margin: 20px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  
+  .pv-app #workspace,
+  .pv-sample,
+  .pv-workflow {
+    width: min(100%, 720px);
+    margin-inline: auto;
+  }
+  
+  .pv-calculator {
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: #fffefa;
+    box-shadow: 0 10px 35px #263c2908;
+  }
+  
+  .pv-card-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  
+  .pv-card-mark {
+    display: grid;
+    flex: 0 0 44px;
+    height: 44px;
+    place-items: center;
+    border: 1px solid #dce4d7;
+    border-radius: 13px;
+    background: #edf2e8;
+    color: var(--green);
+    font-family: Georgia, serif;
+    font-size: 25px;
+  }
+  
+  .pv-card-heading h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+  
+  .pv-card-heading p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  
+  .pv-picker {
+    position: relative;
+  }
+  
+  .pv-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+  
+  .pv-file-label {
+    display: flex;
+    min-height: 166px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 24px;
+    border: 1px dashed #aab7a3;
+    border-radius: 14px;
+    background: #f6f8f1;
+    cursor: pointer;
+    text-align: center;
+    transition: background 160ms ease, border-color 160ms ease;
+  }
+  
+  .pv-file-label:hover {
+    border-color: var(--green);
+    background: #eef3e8;
+  }
+  
+  .pv-file-input:focus-visible + .pv-file-label {
+    outline: 3px solid #487450;
+    outline-offset: 4px;
+  }
+  
+  .pv-file-input:disabled + .pv-file-label {
+    opacity: 0.65;
+    cursor: wait;
+  }
+  
+  .pv-upload-symbol {
+    font-size: 26px;
+    line-height: 1;
+    color: var(--green);
+  }
+  
+  .pv-file-title {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .pv-file-description {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  
+  .pv-upload-help {
+    margin: 13px 0 20px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  
+  .pv-primary-button,
+  .pv-download-button {
+    display: flex;
+    min-height: 50px;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 18px;
+    border: 1px solid var(--green);
+    border-radius: 10px;
+    background: var(--green);
+    color: #fffefa;
+    font-size: 14px;
+    font-weight: 550;
+    text-align: left;
+    transition: background 160ms ease;
+  }
+  
+  .pv-primary-button:hover:not(:disabled),
+  .pv-download-button:hover {
+    background: #163c2c;
+  }
+  
+  .pv-primary-button:disabled {
+    border-color: #d9ded3;
+    background: #e4e8de;
+    color: #697362;
+  }
+  
+  .pv-feedback {
+    margin-top: 18px;
+    color: var(--green);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  
+  .pv-error {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid #e8c7bd;
+    border-radius: 10px;
+    background: #fff2ed;
+    color: #853d2b;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+  
+  .pv-error p:first-child {
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+  
+  .pv-result {
+    margin-top: 28px;
+    padding-top: 25px;
+    border-top: 1px solid var(--line);
+  }
+  
+  .pv-result-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .pv-result h3 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .pv-result-heading > span {
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: #f2ead4;
+    color: #715521;
+    font-size: 10px;
+  }
+  
+  .pv-result > p {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  
+  .pv-download-button {
+    margin-top: 20px;
+  }
+  
+  .pv-result > .pv-result-note {
+    font-size: 11px;
+  }
+  
+  .pv-result-details {
+    margin-top: 22px;
+  }
+  
+  .pv-app summary {
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  
+  .pv-metrics {
+    margin-top: 16px;
+  }
+  
+  .pv-metrics > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+  
+  .pv-metrics dt {
+    color: var(--muted);
+  }
+  
+  .pv-metrics dd {
+    margin: 0;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .pv-sample {
+    margin-top: 18px;
+    padding: 0 4px;
+  }
+  
+  .pv-sample summary > span:first-child {
+    margin-right: 12px;
+    font-weight: 600;
+  }
+  
+  .pv-sample summary > span:last-child {
+    color: var(--muted);
+  }
+  
+  .pv-detail-copy {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  
+  .pv-detail-copy p + p {
+    margin-top: 10px;
+  }
+  
+  .pv-detail-copy a {
+    display: inline-block;
+    margin-top: 12px;
+    color: var(--green);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  
+  .pv-mono {
+    overflow-wrap: anywhere;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+  }
+  
+  .pv-workflow {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    padding: 27px 0 36px;
+    list-style: none;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  
+  .pv-workflow li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  
+  .pv-workflow li > span {
+    color: var(--green);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .pv-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 24px;
+    padding: 24px 0 32px;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 11px;
+  }
+  
+  .pv-footer > details {
+    justify-self: end;
+    max-width: 390px;
+  }
+  
+  .pv-footer summary {
+    text-align: right;
+  }
+  
+  .pv-app button:focus-visible,
+  .pv-app a:focus-visible,
+  .pv-app summary:focus-visible {
+    outline: 2px solid #487450;
+    outline-offset: 4px;
+  }
+  
+  @media (max-width: 600px) {
+    .pv-shell {
+      width: calc(100% - 32px);
+    }
+  
+    .pv-header {
+      min-height: 72px;
+      gap: 12px;
+    }
+  
+    .pv-brand {
+      font-size: 16px;
+    }
+  
+    .pv-status {
+      font-size: 10px;
+      gap: 5px;
+    }
+  
+    .pv-intro {
+      padding: 38px 0 26px;
+    }
+  
+    .pv-intro h1 {
+      letter-spacing: -1.6px;
+    }
+  
+    .pv-intro > p:last-child {
+      font-size: 14px;
+    }
+  
+    .pv-desktop-break {
+      display: none;
+    }
+  
+    .pv-calculator {
+      padding: 22px 18px;
+      border-radius: 18px;
+    }
+  
+    .pv-card-heading {
+      align-items: flex-start;
+      gap: 11px;
+    }
+  
+    .pv-card-heading h2 {
+      font-size: 16px;
+    }
+  
+    .pv-file-label {
+      padding: 20px 14px;
+    }
+  
+    .pv-sample summary > span:last-child {
+      display: block;
+      margin-top: 5px;
+      padding-left: 15px;
+    }
+  
+    .pv-workflow {
+      gap: 12px 18px;
+      font-size: 10px;
+    }
+  
+    .pv-footer {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+  
+    .pv-footer > details {
+      justify-self: stretch;
+      max-width: none;
+    }
+  
+    .pv-footer summary {
+      text-align: left;
+    }
+  }
+
+  /* Wider page layout and more readable supporting text */
+
+.pv-shell {
+    width: calc(100% - 80px);
+    max-width: none;
+    margin-inline: auto;
+  }
+  
+  .pv-header,
+  .pv-footer {
+    width: 100%;
+  }
+  
+  /* Keep the existing headline design unchanged. */
+  
+  .pv-app #workspace,
+  .pv-sample,
+  .pv-workflow {
+    width: min(100%, 1120px);
+    margin-inline: auto;
+  }
+  
+  .pv-calculator {
+    padding: 36px 40px;
+  }
+  
+  .pv-card-heading h2 {
+    font-size: 21px;
+  }
+  
+  .pv-card-heading p {
+    font-size: 15px;
+  }
+  
+  .pv-file-title {
+    font-size: 16px;
+  }
+  
+  .pv-file-description {
+    font-size: 14px;
+  }
+  
+  .pv-upload-help {
+    font-size: 14px;
+  }
+  
+  .pv-primary-button,
+  .pv-download-button {
+    min-height: 54px;
+    font-size: 16px;
+  }
+  
+  .pv-status {
+    font-size: 14px;
+  }
+  
+  .pv-app summary {
+    font-size: 14px;
+  }
+  
+  .pv-result h3 {
+    font-size: 19px;
+  }
+  
+  .pv-result > p {
+    font-size: 15px;
+  }
+  
+  .pv-result-heading > span {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+  
+  .pv-result > .pv-result-note {
+    font-size: 13px;
+  }
+  
+  .pv-metrics > div {
+    padding: 13px 0;
+    font-size: 14px;
+  }
+  
+  .pv-detail-copy {
+    font-size: 14px;
+  }
+  
+  .pv-mono {
+    font-size: 12px;
+  }
+  
+  .pv-workflow {
+    gap: 32px;
+    font-size: 13px;
+  }
+  
+  .pv-workflow li > span {
+    font-size: 12px;
+  }
+  
+  .pv-footer {
+    font-size: 13px;
+  }
+  
+  .pv-footer > details {
+    max-width: 520px;
+  }
+  
+  /* Comfortable spacing on tablets and phones */
+  
+  @media (max-width: 900px) {
+    .pv-shell {
+      width: calc(100% - 48px);
+    }
+  
+    .pv-calculator {
+      padding: 28px;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .pv-shell {
+      width: calc(100% - 32px);
+    }
+  
+    .pv-calculator {
+      padding: 22px 18px;
+    }
+  
+    .pv-card-heading h2 {
+      font-size: 18px;
+    }
+  
+    .pv-status {
+      font-size: 12px;
+    }
+  
+    .pv-metrics > div {
+      flex-direction: column;
+      gap: 4px;
+    }
+  
+    .pv-metrics dd {
+      text-align: left;
+    }
+  
+    .pv-workflow {
+      gap: 14px 20px;
+      font-size: 12px;
+    }
+  
+    .pv-footer > details {
+      max-width: none;
+    }
+  }

@@ -1,28 +1,8 @@
 import { useEffect, useState } from "react";
+import { Fingerprint } from "lucide-react";
 import RealHEDemo from "./RealHEDemo";
 import api, { BACKEND_URL } from "./api";
-
-const card =
-  "rounded-2xl border border-white/10 bg-slate-950/60 p-6";
-
-const stages = [
-  {
-    title: "1. Prepare locally",
-    text: "Select and validate salary values from a documented CSV source.",
-  },
-  {
-    title: "2. Encrypt locally",
-    text: "Use the existing public key. Keep the CSV and secret key on the owner's machine.",
-  },
-  {
-    title: "3. Compute remotely",
-    text: "Upload ciphertexts and request an encrypted sum from the evaluator.",
-  },
-  {
-    title: "4. Verify locally",
-    text: "Download the result, decrypt locally, and compare it with a trusted reference.",
-  },
-];
+import "./workspace.css";
 
 export default function App() {
   const [health, setHealth] = useState("checking");
@@ -34,7 +14,7 @@ export default function App() {
       .then(({ data }) => {
         if (active) {
           setHealth(
-            data.status === "healthy" ? "healthy" : "reachable"
+            data.status === "healthy" ? "connected" : "reachable"
           );
         }
       })
@@ -47,218 +27,120 @@ export default function App() {
     };
   }, []);
 
-  const healthLabel = {
-    checking: "Checking backend",
-    healthy: "Backend health check passed",
-    reachable: "Backend reachable",
-    unavailable: "Backend health check unavailable",
+  const status = {
+    checking: "Checking API",
+    connected: "API connected",
+    reachable: "API reachable",
+    unavailable: "API unavailable",
   }[health];
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <header className="border-b border-white/10">
-        <div className="mx-auto max-w-7xl px-5 py-6">
-          <p className="text-sm font-semibold uppercase tracking-widest text-emerald-300">
+    <main className="pv-app">
+      <div className="pv-shell">
+        <header className="pv-header">
+          <a className="pv-brand" href="#workspace">
+            <Fingerprint size={25} aria-hidden="true" />
             PrivacyVault
-          </p>
+          </a>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            Verifiable Encrypted Salary Analytics
+          <span className={`pv-status pv-status--${health}`} role="status">
+            <span aria-hidden="true" />
+            {status}
+          </span>
+        </header>
+
+        <section className="pv-intro">
+          <p className="pv-eyebrow">A LITTLE LESS EXPOSURE.</p>
+          <h1>
+            Payroll insights.
+            <br />
+            <em>Without the exposure.</em>
           </h1>
-
-          <p className="mt-3 max-w-3xl leading-7 text-slate-300">
-            A privacy-preserving computation playground:
-            encrypt locally, aggregate ciphertexts remotely,
-            and check the decrypted aggregate locally.
+          <p>
+            Calculate totals from encrypted payroll data.
+            <br className="pv-desktop-break" />
+            Keep the key on your machine.
           </p>
-
-          <div
-            role="status"
-            className="mt-5 rounded-xl border border-white/10 bg-white/5 p-4"
-          >
-            <p className="text-sm">{healthLabel}</p>
-
-            <p className="mt-2 break-all font-mono text-xs text-slate-400">
-              Configured API: {BACKEND_URL}
-            </p>
-
-            <p className="mt-2 text-xs leading-5 text-slate-500">
-              A health response is not an end-to-end encryption
-              or verification test.
-            </p>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-7xl space-y-8 px-5 py-8">
-        <section aria-labelledby="workflow-heading">
-          <h2
-            id="workflow-heading"
-            className="mb-4 text-xl font-semibold"
-          >
-            The computation workflow
-          </h2>
-
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {stages.map((stage) => (
-              <article key={stage.title} className={card}>
-                <h3 className="font-semibold text-emerald-300">
-                  {stage.title}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-slate-300">
-                  {stage.text}
-                </p>
-              </article>
-            ))}
-          </div>
         </section>
 
-        <section className={card} aria-labelledby="dataset-heading">
-  <p className="text-xs uppercase tracking-widest text-cyan-300">
-    Documented public-payroll experiment
-  </p>
-
-  <h2
-    id="dataset-heading"
-    className="mt-2 text-2xl font-semibold"
-  >
-    Confidential Payroll Analytics
-  </h2>
-
-  <p className="mt-3 leading-7 text-slate-300">
-    Use case: a payroll owner delegates an aggregate calculation
-    to an external service without sending readable individual
-    pay values or the secret key.
-  </p>
-
-  <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
-    <div>
-      <dt className="text-slate-400">Demonstration source</dt>
-      <dd className="mt-1">NYC Citywide Payroll Data</dd>
-    </div>
-
-    <div>
-      <dt className="text-slate-400">Fiscal year</dt>
-      <dd className="mt-1">2025</dd>
-    </div>
-
-    <div>
-      <dt className="text-slate-400">Selected agency</dt>
-      <dd className="mt-1">DEPT OF ED PEDAGOGICAL</dd>
-    </div>
-
-    <div>
-      <dt className="text-slate-400">Prepared sample</dt>
-      <dd className="mt-1">25 payroll records · USD</dd>
-    </div>
-
-    <div>
-      <dt className="text-slate-400">Metric</dt>
-      <dd className="mt-1">Regular gross paid during the fiscal year</dd>
-    </div>
-
-    <div>
-      <dt className="text-slate-400">Computation</dt>
-      <dd className="mt-1">
-        Encrypted sum; mean derived locally after decryption
-      </dd>
-    </div>
-  </dl>
-
-  <p className="mt-5 text-sm leading-6 text-slate-400">
-    Selection: latest fiscal year with eligible named-agency
-    records at retrieval time, then the agency with the most
-    eligible records, then the first 25 eligible rows ordered
-    by source row ID. Positive regular pay and nonnegative
-    overtime were required.
-  </p>
-
-  <p className="mt-3 text-sm leading-6 text-amber-200">
-    This is a non-random public-data sample, not an agency-wide
-    payroll total or a live feed. Names were not requested.
-    Omitting names does not guarantee that public records
-    cannot be linked back to their source.
-  </p>
-
-  <p className="mt-3 text-sm leading-6 text-slate-400">
-    This panel documents the prepared example. It does not
-    automatically identify, authenticate, or verify an
-    arbitrary uploaded file.
-  </p>
-</section>
-          
-        <section aria-labelledby="compute-heading">
-          <h2
-            id="compute-heading"
-            className="mb-3 text-2xl font-semibold"
-          >
-            Encrypted computation workspace
-          </h2>
-
-          <p className="mb-5 text-sm leading-6 text-slate-400">
-            Use the uploaded-dataset option for the real-world
-            experiment. Upload encrypted-dataset.json only—not
-            the original CSV, local reference, or secret key.
-          </p>
-
+        <div id="workspace">
           <RealHEDemo />
-        </section>
+        </div>
 
-        <section className="grid gap-5 lg:grid-cols-2">
-          <article className={card}>
-            <h2 className="text-xl font-semibold text-emerald-300">
-              Privacy boundary
-            </h2>
+        <details className="pv-sample">
+          <summary>
+            <span>Example dataset</span>
+            <span>NYC payroll · 2025 · 25 records</span>
+          </summary>
 
-            <ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-slate-300">
-              <li>
-                Local preparation uses public cryptographic files
-                to encrypt the salary values.
-              </li>
-              <li>
-                The encrypted upload includes ciphertexts,
-                a public record count, and public-file identifiers.
-              </li>
-              <li>
-                The separate local verifier uses the secret key
-                to decrypt the returned aggregate.
-              </li>
-              <li>
-                The mean is calculated locally by dividing the
-                decrypted sum by the public record count.
-              </li>
-            </ul>
-          </article>
+          <div className="pv-detail-copy">
+            <p>
+              Regular gross pay from a prepared sample of
+              DEPT OF ED PEDAGOGICAL records, measured in USD.
+              This description does not identify your uploaded file.
+            </p>
+            <p>
+              The importer selected the latest eligible fiscal year
+              at retrieval time, the agency with the most eligible
+              records, then the first 25 eligible rows ordered by
+              source row ID. Eligibility required positive regular
+              pay, nonnegative overtime, and supported input values.
+            </p>
+            <p>
+              This is a non-random public-data sample—not an
+              agency-wide total or a live feed. Names were not
+              requested; public records may still be linkable.
+            </p>
+            <a
+              href="https://data.cityofnewyork.us/City-Government/Citywide-Payroll-Data-Fiscal-Year-/k397-673e"
+              target="_blank"
+              rel="noreferrer"
+            >
+              View NYC Open Data source ↗
+            </a>
+          </div>
+        </details>
 
-          <article className={card}>
-            <h2 className="text-xl font-semibold text-amber-300">
-              Evidence and limitations
-            </h2>
+        <ol className="pv-workflow" aria-label="Computation workflow">
+          <li><span>01</span> Upload encrypted data</li>
+          <li><span>02</span> Compute remotely</li>
+          <li><span>03</span> Verify locally</li>
+        </ol>
 
-            <ul className="mt-4 list-disc space-y-3 pl-5 text-sm leading-6 text-slate-300">
-              <li>
-                Check numerical consistency using the separate
-                local verifier and a preselected tolerance.
-              </li>
-              <li>
-                The website does not mark an experiment verified
-                merely because an API request succeeded.
-              </li>
-              <li>
-                A passing numerical check is not a cryptographic
-                proof of server execution or result authenticity.
-              </li>
-              <li>
-                Public source data demonstrates the workflow;
-                it does not establish secrecy of those source values.
-              </li>
-            </ul>
-          </article>
-        </section>
+        <footer className="pv-footer">
+          <p>PrivacyVault · Educational demo</p>
 
-        <footer className="border-t border-white/10 py-6 text-center text-xs leading-6 text-slate-500">
-          PrivacyVault · Educational CKKS demonstration ·
-          Local key-holder verification · Not production payroll software
+          <details>
+            <summary>Privacy & limitations</summary>
+            <div className="pv-detail-copy">
+              <p>
+                Upload only the encrypted dataset—not your CSV,
+                local reference, verification report, or secret key.
+                Ciphertexts, record counts, and public-file
+                identifiers are sent to the API.
+              </p>
+              <p>
+                Decryption happens separately on the key holder’s
+                machine. The mean is derived locally from the
+                decrypted sum and record count.
+              </p>
+              <p>
+                Receiving a result does not verify it. Numerical
+                agreement is not a cryptographic proof of server
+                execution or result authenticity.
+              </p>
+              <p>
+                Public data demonstrates the workflow, not secrecy
+                of its source values. A key holder given individual
+                ciphertexts could decrypt them.
+              </p>
+              <p>
+                API connectivity is not an end-to-end encryption
+                test. This prototype is not production payroll software.
+              </p>
+              <p className="pv-mono">Configured API: {BACKEND_URL}</p>
+            </div>
+          </details>
         </footer>
       </div>
     </main>

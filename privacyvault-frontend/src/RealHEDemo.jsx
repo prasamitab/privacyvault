@@ -212,174 +212,153 @@ export default function RealHEDemo() {
 
   return (
     <section
-      aria-busy={busy}
-      className="rounded-2xl border border-cyan-300/30 bg-slate-950/60 p-6"
+      className="pv-calculator"
+      aria-labelledby="pv-calculator-title"
     >
-      <p className="text-xs uppercase tracking-widest text-cyan-300">
-        CKKS encrypted-sum experiment
-      </p>
+      <div className="pv-card-heading">
+        <span className="pv-card-mark" aria-hidden="true">∑</span>
+        <div>
+          <h2 id="pv-calculator-title">Calculate an encrypted total</h2>
+          <p>Choose your prepared dataset to begin.</p>
+        </div>
+      </div>
 
-      <h3 className="mt-2 text-xl font-semibold text-white">
-        Upload ciphertexts, receive ciphertext
-      </h3>
-
-      <p className="mt-3 text-sm leading-6 text-slate-300">
-        The evaluator adds the uploaded ciphertexts. Decryption and
-        comparison with the plaintext reference happen separately
-        on the key holder's machine.
-      </p>
-
-      <div className="mt-5 rounded-xl border border-white/10 p-4">
-        <label
-          htmlFor="he-dataset-file"
-          className="block text-sm font-semibold"
-        >
-          Encrypted dataset JSON
-        </label>
-
-        <p
-          id="he-dataset-help"
-          className="mt-2 text-xs leading-5 text-slate-400"
-        >
-          Supports 1–100 records and a maximum file size of 64 MiB.
-          Select encrypted-dataset.json only. Never select your
-          CSV, local reference, verification report, or secret key.
-        </p>
-
+      <div className="pv-picker">
         <input
           id="he-dataset-file"
+          className="pv-file-input"
           type="file"
           accept=".json,application/json"
           onChange={handleFileChange}
           disabled={busy}
           aria-describedby="he-dataset-help"
-          className="mt-4 block w-full rounded-lg border border-white/15 p-3 text-sm file:mr-3 file:rounded-md file:border-0 file:bg-slate-700 file:px-3 file:py-2 file:text-white disabled:opacity-50"
         />
 
-        {selectedFile && (
-          <p className="mt-3 break-all text-xs text-slate-400">
-            Selected: {selectedFile.name} ·{" "}
-            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MiB
-          </p>
-        )}
+        <label htmlFor="he-dataset-file" className="pv-file-label">
+          <span className="pv-upload-symbol" aria-hidden="true">↑</span>
 
-        <button
-          type="button"
-          onClick={runAggregation}
-          disabled={busy || !selectedFile}
-          className="mt-4 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {busy
-            ? "Computing encrypted sum..."
-            : "Aggregate uploaded dataset"}
-        </button>
+          <span className="pv-file-title">
+            {selectedFile ? selectedFile.name : "Choose encrypted file"}
+          </span>
+
+          <span className="pv-file-description">
+            {selectedFile
+              ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MiB · Click to change`
+              : "encrypted-dataset.json · Up to 64 MiB"}
+          </span>
+        </label>
       </div>
 
+      <p id="he-dataset-help" className="pv-upload-help">
+        Supports 1–100 records. Keep your secret key and plaintext CSV local.
+      </p>
+
+      <button
+        type="button"
+        onClick={runAggregation}
+        disabled={busy || !selectedFile}
+        className="pv-primary-button"
+      >
+        {busy ? "Calculating encrypted total…" : "Calculate encrypted total"}
+        <span aria-hidden="true">{busy ? "…" : "→"}</span>
+      </button>
+
       {busy && (
-        <p role="status" className="mt-4 text-sm text-cyan-200">
-          Waiting for the API response. No decryption is performed here.
+        <p role="status" className="pv-feedback">
+          Waiting for the API. A sleeping service may take a moment.
+          No decryption happens here.
         </p>
       )}
 
       {error && (
-        <p role="alert" className="mt-4 text-sm text-red-300">
-          {error}
-        </p>
+        <div role="alert" className="pv-error">
+          <p>We couldn’t complete the calculation.</p>
+          <p>{error}</p>
+        </div>
       )}
 
       {result && (
-        <div className="mt-6 rounded-xl border border-white/10 p-5">
-          <p role="status" className="font-semibold text-cyan-200">
-            Encrypted aggregate received
+        <section className="pv-result" aria-labelledby="pv-result-title">
+          <div className="pv-result-heading">
+            <h3 id="pv-result-title" role="status">
+              Your encrypted result is ready
+            </h3>
+            <span>Verification pending</span>
+          </div>
+
+          <p>
+            Download the result, then decrypt and check it using
+            your separate local verifier.
           </p>
 
-          <p className="mt-2 text-sm text-amber-200">
-            Local numerical verification is still required.
+          <button
+            type="button"
+            onClick={downloadEncryptedResult}
+            className="pv-download-button"
+          >
+            Download encrypted result
+            <span aria-hidden="true">↓</span>
+          </button>
+
+          <p className="pv-result-note">
+            Contains ciphertext and metadata—not a readable payroll total.
           </p>
 
-          <dl className="mt-5 grid gap-5 sm:grid-cols-2">
-            <div>
-              <dt className="text-xs text-slate-400">Record count</dt>
-              <dd className="mt-1">{result.employee_count}</dd>
-            </div>
+          <details className="pv-result-details">
+            <summary>Calculation details</summary>
 
-            <div>
-              <dt className="text-xs text-slate-400">
-                Server-reported processing time
-              </dt>
-              <dd className="mt-1">
-                {result.computation_time_ms.toFixed(2)} ms
-              </dd>
-            </div>
+            <dl className="pv-metrics">
+              <div>
+                <dt>Records</dt>
+                <dd>{result.employee_count}</dd>
+              </div>
+              <div>
+                <dt>Operation</dt>
+                <dd>Encrypted sum · CKKS</dd>
+              </div>
+              <div>
+                <dt>Server-reported processing time</dt>
+                <dd>{result.computation_time_ms.toFixed(2)} ms</dd>
+              </div>
+              <div>
+                <dt>Browser-observed request duration</dt>
+                <dd>{metrics.requestElapsedMs.toFixed(2)} ms</dd>
+              </div>
+              <div>
+                <dt>Request body</dt>
+                <dd>{metrics.requestBytes.toLocaleString()} bytes</dd>
+              </div>
+              <div>
+                <dt>Result ciphertext</dt>
+                <dd>
+                  {result.ciphertext_size_bytes.toLocaleString()} bytes
+                </dd>
+              </div>
+            </dl>
 
-            <div>
-              <dt className="text-xs text-slate-400">
-                Browser-observed request duration
-              </dt>
-              <dd className="mt-1">
-                {metrics.requestElapsedMs.toFixed(2)} ms
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-xs text-slate-400">
-                Request body size
-              </dt>
-              <dd className="mt-1">
-                {metrics.requestBytes.toLocaleString()} bytes
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-xs text-slate-400">
-                Result ciphertext size
-              </dt>
-              <dd className="mt-1">
-                {result.ciphertext_size_bytes.toLocaleString()} bytes
-              </dd>
-            </div>
-
-            <div>
-              <dt className="text-xs text-slate-400">Operation</dt>
-              <dd className="mt-1">Encrypted sum · CKKS</dd>
-            </div>
-          </dl>
-
-          <p className="mt-5 text-xs leading-5 text-slate-400">
-            Request duration includes the API round trip, not local
-            encryption or decryption. Response checks validate expected
-            metadata; they do not prove correct server execution.
-          </p>
-
-          <details className="mt-5 text-xs">
-            <summary className="cursor-pointer text-slate-300">
-              Public-file identifiers and ciphertext preview
-            </summary>
-
-            <div className="mt-3 space-y-3 break-all font-mono text-slate-400">
-              <p>Context SHA-256: {result.context_sha256}</p>
-              <p>Public key SHA-256: {result.public_key_sha256}</p>
+            <div className="pv-detail-copy">
               <p>
+                Request duration includes the API round trip, not local
+                encryption or decryption. Server timing is reported
+                by the API, not independently attested.
+              </p>
+              <p>
+                Response checks validate expected metadata. They do
+                not prove correct server execution.
+              </p>
+              <p className="pv-mono">
+                Context SHA-256: {result.context_sha256}
+              </p>
+              <p className="pv-mono">
+                Public key SHA-256: {result.public_key_sha256}
+              </p>
+              <p className="pv-mono">
                 Ciphertext preview:{" "}
                 {result.encrypted_result_base64.slice(0, 80)}…
               </p>
             </div>
           </details>
-
-          <button
-            type="button"
-            onClick={downloadEncryptedResult}
-            className="mt-5 rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold hover:bg-white/5"
-          >
-            Download encrypted result
-          </button>
-
-          <p className="mt-3 text-xs leading-5 text-slate-400">
-            The download contains aggregate ciphertext, API metadata,
-            and client-recorded request information—not the plaintext
-            total or secret key. Run the separate local verifier next.
-          </p>
-        </div>
+        </section>
       )}
     </section>
   );
