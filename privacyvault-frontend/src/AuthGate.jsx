@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Fingerprint, ArrowRight, LogOut } from "lucide-react";
 import api, { BACKEND_URL } from "./api";
 import App from "./App.jsx";
+import "./workspace.css";
 
 export default function AuthGate() {
   const [username, setUsername] = useState("demo");
@@ -11,6 +13,9 @@ export default function AuthGate() {
 
   async function login(event) {
     event.preventDefault();
+
+    if (busy) return;
+
     setBusy(true);
     setError("");
 
@@ -49,84 +54,158 @@ export default function AuthGate() {
   if (authenticated) {
     return (
       <>
-        <div className="flex items-center justify-between gap-4 bg-slate-900 px-5 py-3 text-sm text-slate-200">
-          <span>PrivacyVault demo · Signed in as {username}</span>
-          <button
-            type="button"
-            onClick={logout}
-            className="rounded-lg border border-white/20 px-4 py-2 hover:bg-white/10"
-          >
-            Sign out
-          </button>
+        <div className="pv-session">
+          <div className="pv-session-inner">
+            <p>
+              Demo workspace
+              <span className="pv-session-divider" aria-hidden="true">
+                /
+              </span>
+              <span className="pv-session-user">
+                Signed in as {username}
+              </span>
+            </p>
+
+            <button
+              type="button"
+              onClick={logout}
+              className="pv-signout"
+            >
+              Sign out
+              <LogOut size={14} aria-hidden="true" />
+            </button>
+          </div>
         </div>
+
         <App />
       </>
     );
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-5 text-white">
-      <form
-        onSubmit={login}
-        className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900 p-8 shadow-xl"
-      >
-        <h1 className="text-2xl font-bold">PrivacyVault demo</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-300">
-          Sign in with the demo access credentials. This is not your
-          GitHub or Render account login.
-        </p>
+    <main className="pv-app pv-auth-page">
+      <div className="pv-auth-shell">
+        <header className="pv-auth-header">
+          <a className="pv-brand" href="#demo-signin">
+            <Fingerprint size={25} aria-hidden="true" />
+            PrivacyVault
+          </a>
+          <span className="pv-auth-demo-label">DEMO ACCESS</span>
+        </header>
 
-        <label htmlFor="demo-username" className="mt-6 block text-sm">
-          Username
-        </label>
-        <input
-          id="demo-username"
-          autoComplete="username"
-          value={username}
-          onChange={(event) => setUsername(event.target.value)}
-          disabled={busy}
-          required
-          className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"
-        />
+        <div className="pv-auth-content">
+          <section
+            className="pv-auth-intro"
+            aria-labelledby="pv-auth-title"
+          >
+            <p className="pv-eyebrow">PRIVATE COMPUTATION.</p>
+            <h1 id="pv-auth-title">
+              The insights.
+              <br />
+              <em>Not the exposure.</em>
+            </h1>
+            <p>
+              Explore encrypted payroll analytics.
+              Keep decryption on your machine.
+            </p>
+          </section>
 
-        <label htmlFor="demo-password" className="mt-4 block text-sm">
-          Password
-        </label>
-        <input
-          id="demo-password"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          disabled={busy}
-          required
-          className="mt-2 w-full rounded-lg border border-white/20 bg-slate-950 p-3"
-        />
+          <form
+            id="demo-signin"
+            className="pv-auth-card"
+            onSubmit={login}
+            aria-labelledby="pv-signin-title"
+          >
+            <div className="pv-auth-card-heading">
+              <h2 id="pv-signin-title">Welcome to the demo</h2>
+              <p>Sign in with your demo access credentials.</p>
+            </div>
 
-        {error && (
-          <p role="alert" className="mt-4 text-sm text-red-300">
-            {error}
-          </p>
-        )}
+            <div className="pv-auth-field">
+              <label htmlFor="demo-username">Username</label>
+              <input
+                id="demo-username"
+                name="username"
+                autoComplete="username"
+                autoCapitalize="none"
+                spellCheck={false}
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                disabled={busy}
+                required
+              />
+            </div>
 
-        <button
-          type="submit"
-          disabled={busy}
-          className="mt-6 w-full rounded-lg bg-cyan-300 p-3 font-semibold text-slate-950 disabled:opacity-50"
-        >
-          {busy ? "Connecting — first request may take a minute…" : "Sign in"}
-        </button>
+            <div className="pv-auth-field">
+              <label htmlFor="demo-password">Password</label>
+              <input
+                id="demo-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                disabled={busy}
+                aria-describedby="pv-auth-credential-help"
+                required
+              />
+            </div>
 
-        <p className="mt-4 text-xs leading-5 text-slate-400">
-          Credentials stay in page memory until sign-out or refresh.
-          Your browser may separately offer to save them.
-          Never enter or upload your HE secret key.
-        </p>
+            <p id="pv-auth-credential-help" className="pv-auth-hint">
+              Use the project’s demo credentials—not your GitHub
+              or Render password.
+            </p>
 
-        <p className="mt-3 break-all text-xs text-slate-500">
-          API: {BACKEND_URL}
-        </p>
-      </form>
+            {error && (
+              <div role="alert" className="pv-error">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={busy}
+              className="pv-primary-button pv-auth-submit"
+            >
+              {busy ? "Connecting…" : "Enter workspace"}
+              <ArrowRight size={17} aria-hidden="true" />
+            </button>
+
+            {busy && (
+              <p role="status" className="pv-feedback">
+                Connecting to the API. The first request may take
+                a minute while the service wakes up.
+              </p>
+            )}
+
+            <p className="pv-auth-key-note">
+              Your HE secret key is never needed to sign in.
+            </p>
+
+            <details className="pv-auth-details">
+              <summary>About demo access</summary>
+              <div className="pv-detail-copy">
+                <p>
+                  Credentials are held in this page’s memory until
+                  sign-out or refresh. Your browser may separately
+                  offer to save them.
+                </p>
+                <p>
+                  Never enter or upload your HE secret key.
+                  Decryption and numerical verification happen
+                  separately on your machine.
+                </p>
+                <p className="pv-mono">Configured API: {BACKEND_URL}</p>
+              </div>
+            </details>
+          </form>
+        </div>
+
+        <footer className="pv-auth-footer">
+          <span>PrivacyVault · Educational demo</span>
+          <span>Encrypted computation. Local verification.</span>
+        </footer>
+      </div>
     </main>
   );
 }
