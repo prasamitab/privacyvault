@@ -152,8 +152,7 @@ export default function AuthGate() {
             </div>
 
             <p id="pv-auth-credential-help" className="pv-auth-hint">
-              Use the project’s demo credentials—not your GitHub
-              or Render password.
+              Enter Demo password.
             </p>
 
             {error && (
