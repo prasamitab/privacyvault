@@ -114,36 +114,79 @@ export default function App() {
         </section>
 
         <section className={card} aria-labelledby="dataset-heading">
-          <p className="text-xs uppercase tracking-widest text-cyan-300">
-            Reproducible experiment
-          </p>
+  <p className="text-xs uppercase tracking-widest text-cyan-300">
+    Documented public-payroll experiment
+  </p>
 
-          <h2
-            id="dataset-heading"
-            className="mt-2 text-2xl font-semibold"
-          >
-            Published salary-rate benchmark
-          </h2>
+  <h2
+    id="dataset-heading"
+    className="mt-2 text-2xl font-semibold"
+  >
+    Confidential Payroll Analytics
+  </h2>
 
-          <p className="mt-3 leading-7 text-slate-300">
-            The current prepared experiment uses ten annual USD
-            salary rates from OPM Salary Table 2026-GS:
-            Grade 1, Steps 1–10.
-          </p>
+  <p className="mt-3 leading-7 text-slate-300">
+    Use case: a payroll owner delegates an aggregate calculation
+    to an external service without sending readable individual
+    pay values or the secret key.
+  </p>
 
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            These are public salary-table entries, not confidential
-            employee payroll records or a live salary feed. Their
-            mean describes the selected rates, not the average
-            salary of the federal workforce.
-          </p>
+  <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
+    <div>
+      <dt className="text-slate-400">Demonstration source</dt>
+      <dd className="mt-1">NYC Citywide Payroll Data</dd>
+    </div>
 
-          <p className="mt-3 text-sm leading-6 text-slate-400">
-            This describes the prepared example. It does not
-            automatically identify or certify the file you upload.
-          </p>
-        </section>
+    <div>
+      <dt className="text-slate-400">Fiscal year</dt>
+      <dd className="mt-1">2025</dd>
+    </div>
 
+    <div>
+      <dt className="text-slate-400">Selected agency</dt>
+      <dd className="mt-1">DEPT OF ED PEDAGOGICAL</dd>
+    </div>
+
+    <div>
+      <dt className="text-slate-400">Prepared sample</dt>
+      <dd className="mt-1">25 payroll records · USD</dd>
+    </div>
+
+    <div>
+      <dt className="text-slate-400">Metric</dt>
+      <dd className="mt-1">Regular gross paid during the fiscal year</dd>
+    </div>
+
+    <div>
+      <dt className="text-slate-400">Computation</dt>
+      <dd className="mt-1">
+        Encrypted sum; mean derived locally after decryption
+      </dd>
+    </div>
+  </dl>
+
+  <p className="mt-5 text-sm leading-6 text-slate-400">
+    Selection: latest fiscal year with eligible named-agency
+    records at retrieval time, then the agency with the most
+    eligible records, then the first 25 eligible rows ordered
+    by source row ID. Positive regular pay and nonnegative
+    overtime were required.
+  </p>
+
+  <p className="mt-3 text-sm leading-6 text-amber-200">
+    This is a non-random public-data sample, not an agency-wide
+    payroll total or a live feed. Names were not requested.
+    Omitting names does not guarantee that public records
+    cannot be linked back to their source.
+  </p>
+
+  <p className="mt-3 text-sm leading-6 text-slate-400">
+    This panel documents the prepared example. It does not
+    automatically identify, authenticate, or verify an
+    arbitrary uploaded file.
+  </p>
+</section>
+          
         <section aria-labelledby="compute-heading">
           <h2
             id="compute-heading"
